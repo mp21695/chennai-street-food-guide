@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chennai Street Food Recommender | Saapadu Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+        }
+
+        .form-section label {
+            display: block;
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .area-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .area-btn, .mood-btn {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.95em;
+            font-weight: 500;
+        }
+
+        .area-btn:hover, .mood-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .area-btn.selected, .mood-btn.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .mood-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 10px;
+        }
+
+        .mood-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .mood-emoji {
+            font-size: 1.3em;
+        }
+
+        .recommend-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .recommend-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .recommend-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .result {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .result-header h2 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .result-header .subtitle {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .info-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .info-item .label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .info-item .value {
+            font-size: 1.1em;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .description {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            line-height: 1.6;
+        }
+
+        .tips {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .tips strong {
+            color: #856404;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #28a745;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .area-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .mood-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍛 Chennai Street Food Guide</h1>
+            <p>Saapadu recommendations, Anna! 😋</p>
+        </div>
+
+        <div class="card">
+            <div class="form-section">
+                <label> Which area are you in?</label>
+                <div class="area-grid" id="areaGrid"></div>
+            </div>
+
+            <div class="form-section">
+                <label> What's your mood?</label>
+                <div class="mood-grid" id="moodGrid"></div>
+            </div>
+
+            <button class="recommend-btn" id="recommendBtn" onclick="getRecommendation()" disabled>
+                Get My Recommendation 🔍
+            </button>
+        </div>
+
+        <div id="result"></div>
+
+        <div class="footer">
+            <p>Built with ❤️ for Chennai food lovers | Powered by Kiro AI</p>
+        </div>
+    </div>
+
+    <script>
+        const areas = [
+            'T. Nagar',
+            'Anna Nagar',
+            'Velachery',
+            'Marina Beach',
+            'Mylapore',
+            'Mount Road',
+            'Besant Nagar'
+        ];
+
+        const moods = [
+            { value: 'spicy', label: 'Spicy & Bold', emoji: '🌶️' },
+            { value: 'light', label: 'Light & Healthy', emoji: '🥗' },
+            { value: 'veg', label: 'Pure Veg', emoji: '🥬' },
+            { value: 'night', label: 'Night Snack', emoji: '🌙' },
+            { value: 'morning', label: 'Breakfast', emoji: '☀️' },
+            { value: 'evening', label: 'Evening Tea', emoji: '☕' }
+        ];
+
+        // Complete recommendations database - ALL combinations covered!
+        const recommendations = {
+            // T. NAGAR - All 6 moods
+            'T. Nagar-spicy': {
+                food: 'Kothu Parotta with Chicken',
+                place: 'Buhari, Burma Bazaar junction',
+                time: 'After 8 PM',
+                price: '₹80-150',
+                description: 'The legendary Chennai late-night snack! Crispy shredded parotta tossed with spicy chicken gravy, eggs, and aromatic spices. The sizzling sound and aroma will draw you in from blocks away.',
+                tips: 'Pro tip: Tell the anna "Romba kaara venum" if you want it extra spicy. The mutton kothu is premium but worth it. Best enjoyed standing at the counter watching them make it on the hot griddle.',
+                veg: 'Veg kothu available'
+            },
+            'T. Nagar-light': {
+                food: 'Filter Coffee & Onion Bajji',
+                place: 'Saravana Bhavan, Pondy Bazaar',
+                time: '4-7 PM (Evening tea time)',
+                price: '₹30-60',
+                description: 'Classic Chennai evening ritual. Crispy onion bajjis paired with strong, frothy filter coffee. Perfect break during shopping.',
+                tips: 'Evening is peak time - expect crowds but high turnover means everything is fresh. The coffee here is authentically strong, the way Chennaiites like it.',
+                veg: 'Pure Veg'
+            },
+            'T. Nagar-veg': {
+                food: 'Pani Puri & Bhel',
+                place: 'Street stalls near Ranganathan Street',
+                time: '5-9 PM',
+                price: '₹30-50',
+                description: 'Tangy, spicy pani puri with multiple chutneys. The bhel is fresh and crunchy with generous portions.',
+                tips: 'Look for stalls with crowds - sign of freshness. Ask for "pulippu jasthi" if you want it extra tangy. The vendors here are experts at balancing sweet, spicy, and tangy flavors.',
+                veg: 'Pure Veg'
+            },
+            'T. Nagar-night': {
+                food: 'Atho (Burmese Noodles)',
+                place: 'Burma Bazaar street stalls',
+                time: '7 PM - 11 PM',
+                price: '₹60-100',
+                description: 'Unique to Chennai! Yellow noodles with tangy sauce, chicken/veg, and spices. Burma influence makes this special.',
+                tips: 'Available in both veg and non-veg. Add extra lime for more tang. Great alternative to kothu parotta. The Burma Bazaar area has authentic vendors whove been making this for generations.',
+                veg: 'Both veg and non-veg available'
+            },
+            'T. Nagar-morning': {
+                food: 'Idli Sambar & Filter Coffee',
+                place: 'Ratna Cafe, T. Nagar',
+                time: '7-10 AM',
+                price: '₹40-70',
+                description: 'Start your day right with soft, fluffy idlis served with aromatic sambar and coconut chutney. The filter coffee here is strong and perfect.',
+                tips: 'Morning rush can be intense, but service is quick. Try the mini idlis if available. Best breakfast spot before hitting the Pondy Bazaar shops.',
+                veg: 'Pure Veg'
+            },
+            'T. Nagar-evening': {
+                food: 'Masala Vada & Tea',
+                place: 'Local tea kadais, Pondy Bazaar',
+                time: '4-7 PM',
+                price: '₹20-40',
+                description: 'Crispy masala vadas (lentil fritters) with hot masala tea. Perfect evening snack while taking a break from shopping.',
+                tips: 'These small tea shops (kadais) are everywhere in T. Nagar. The vadas are made fresh throughout the evening. Dip them in the tea for extra flavor!',
+                veg: 'Pure Veg'
+            },
+
+            // ANNA NAGAR - All 6 moods
+            'Anna Nagar-morning': {
+                food: 'Idli, Dosa, Vada with Filter Coffee',
+                place: 'Murugan Idli Shop, 2nd Avenue',
+                time: '7-10 AM (Breakfast)',
+                price: '₹30-80',
+                description: 'Soft, fluffy idlis served with multiple chutneys and sambar. The dosas are crispy and the vadas perfectly golden. This is breakfast done right, Chennai style.',
+                tips: 'Morning is when everything is freshest. The idlis here are famous for being super soft. Try the podi idli for extra flavor. Pair with strong filter coffee. Weekend mornings can be busy!',
+                veg: 'Pure Veg'
+            },
+            'Anna Nagar-light': {
+                food: 'Sundal (Steamed Chickpeas)',
+                place: 'Evening stalls near 2nd Avenue',
+                time: '5-8 PM',
+                price: '₹20-40',
+                description: 'Healthy evening snack! Steamed chickpeas seasoned with mustard, curry leaves, coconut, and lime. Multiple varieties available.',
+                tips: 'Available varieties: Karamani (black-eyed peas), Kadalai (chickpeas), Mochai (field beans). All are protein-rich and low-calorie. Perfect guilt-free snack. Very popular with health-conscious residents.',
+                veg: 'Pure Veg, Healthy'
+            },
+            'Anna Nagar-evening': {
+                food: 'Bajji & Bonda with Tea',
+                place: 'Local tea stalls, 2nd Avenue',
+                time: '4-7 PM',
+                price: '₹20-50',
+                description: 'Hot, crispy bajjis (fried fritters) with masala tea. Perfect for rainy days or evening relaxation.',
+                tips: 'Best on rainy days! Try different varieties: onion, potato, chili. Each shop has their own batter recipe. The residential vibe here makes it perfect for relaxing.',
+                veg: 'Pure Veg'
+            },
+            'Anna Nagar-spicy': {
+                food: 'Mirchi Bajji & Samosa',
+                place: 'Evening snack stalls, 2nd Main Road',
+                time: '5-8 PM',
+                price: '₹25-60',
+                description: 'Spicy green chili bajjis stuffed with tangy filling, served with hot samosas. Perfect for spice lovers!',
+                tips: 'Ask for "kaara bajji" to ensure they give you the spiciest ones. Have some water ready! The samosas here are crispy and filled generously.',
+                veg: 'Pure Veg'
+            },
+            'Anna Nagar-veg': {
+                food: 'South Indian Thali',
+                place: 'Anjappar, Anna Nagar',
+                time: '12-3 PM, 7-10 PM',
+                price: '₹120-180',
+                description: 'Complete vegetarian meal with rice, sambar, rasam, multiple curries, and dessert. Unlimited servings!',
+                tips: 'The thalis here are generous. Come hungry! They serve on banana leaf which adds to the authentic experience. Very family-friendly atmosphere.',
+                veg: 'Pure Veg'
+            },
+            'Anna Nagar-night': {
+                food: 'Dosa Varieties',
+                place: '24/7 Dosa spots, Anna Nagar',
+                time: '8 PM onwards',
+                price: '₹60-100',
+                description: 'Late night dosa cravings? Anna Nagar has you covered with crispy masala dosas, rava dosas, and more.',
+                tips: 'Several places stay open late. Try the paper roast or cheese dosa for something special. Perfect after a late movie.',
+                veg: 'Pure Veg'
+            },
+
+            // VELACHERY - All 6 moods
+            'Velachery-night': {
+                food: 'Chicken Shawarma',
+                place: 'Al-Bek and various street stalls',
+                time: '8 PM - 12 AM',
+                price: '₹80-120',
+                description: 'Perfect for late-night cravings! Juicy chicken wrapped in soft kuboos bread with garlic mayo, pickles, and fries. Popular with IT crowd.',
+                tips: 'Velachery is IT hub so late-night options are plenty. Ask for extra garlic sauce if you like it. The mayonnaise here is special. Open till midnight on weekends.',
+                veg: 'Non-veg'
+            },
+            'Velachery-spicy': {
+                food: 'Mutton Kothu Parotta',
+                place: 'Multiple roadside stalls',
+                time: '8 PM onwards',
+                price: '₹120-150',
+                description: 'Premium version of kothu! Tender mutton pieces with shredded parotta. The ultimate Chennai night food.',
+                tips: 'More expensive but worth it for meat lovers. The mutton is usually tender and flavorful. Peak time is 9-11 PM. Great after work dinner option.',
+                veg: 'Egg kothu available as lighter option'
+            },
+            'Velachery-morning': {
+                food: 'Idiyappam & Kurma',
+                place: 'Local mess restaurants',
+                time: '7-10 AM',
+                price: '₹40-70',
+                description: 'String hoppers with vegetable kurma. Light and delicious breakfast option.',
+                tips: 'This is a classic South Indian breakfast. The idiyappam is soft and pairs perfectly with the mildly spiced kurma. Good option before heading to work.',
+                veg: 'Pure Veg'
+            },
+            'Velachery-light': {
+                food: 'Fresh Fruit Juice & Corn',
+                place: 'Juice stalls near Velachery station',
+                time: 'All day, peak 5-8 PM',
+                price: '₹40-80',
+                description: 'Fresh sugarcane juice, watermelon juice, or boiled corn with butter and spices. Refreshing and healthy!',
+                tips: 'The juice is made fresh. Try the sugarcane juice with lemon and mint. The corn is especially good in evenings. Very popular with students.',
+                veg: 'Pure Veg, Healthy'
+            },
+            'Velachery-veg': {
+                food: 'Chole Bhature',
+                place: 'North Indian stalls',
+                time: '11 AM - 9 PM',
+                price: '₹70-100',
+                description: 'Spicy chickpea curry with fluffy fried bread. North Indian favorite available in Velachery.',
+                tips: 'The IT crowd here loves variety, so youll find North Indian food easily. Filling meal option. Good for lunch or dinner.',
+                veg: 'Pure Veg'
+            },
+            'Velachery-evening': {
+                food: 'Samosa & Chai',
+                place: 'Tea stalls near office areas',
+                time: '4-8 PM',
+                price: '₹30-50',
+                description: 'Crispy samosas with hot masala chai. Perfect evening break for office goers.',
+                tips: 'Very popular with the working crowd. The samosas are made throughout the evening to ensure freshness. Great networking spot too!',
+                veg: 'Pure Veg'
+            },
+
+            // MARINA BEACH - All 6 moods
+            'Marina Beach-evening': {
+                food: 'Beach Sundal',
+                place: 'Multiple vendors along Marina',
+                time: '5-8 PM ONLY (Evening)',
+                price: '₹20-30',
+                description: 'THE iconic Marina Beach snack! Fresh sundal enjoyed with the sea breeze. Available in white peas, black chickpeas, and moong varieties.',
+                tips: 'TIMING IS KEY: Only available in evening. Best enjoyed during sunset. Walk along the beach while eating. Try different vendors for variety. Very hygienic as everything is freshly steamed.',
+                veg: 'Pure Veg, Beach Special'
+            },
+            'Marina Beach-light': {
+                food: 'Murukku Sandwich',
+                place: 'Beach vendors',
+                time: '5-9 PM',
+                price: '₹30',
+                description: 'Unique Chennai invention! Crunchy murukku pieces in a sandwich with chutney. Only found near beaches.',
+                tips: 'Very unique to Chennai beaches. Crunchy and tasty. Good for kids too. Try it with the sweet chutney option.',
+                veg: 'Pure Veg'
+            },
+            'Marina Beach-spicy': {
+                food: 'Masala Peanuts & Bajji',
+                place: 'Beach stalls',
+                time: '5-9 PM',
+                price: '₹30-50',
+                description: 'Spicy roasted peanuts and hot bajjis. Perfect beach snacks with a kick!',
+                tips: 'The peanuts are freshly roasted with chili powder and spices. Bajjis are best eaten hot. Great while watching the waves.',
+                veg: 'Pure Veg'
+            },
+            'Marina Beach-morning': {
+                food: 'Morning Walk & Fresh Coconut Water',
+                place: 'Beach coconut vendors',
+                time: '6-9 AM',
+                price: '₹30-50',
+                description: 'Start your day with a beach walk and refreshing coconut water. Healthy and energizing!',
+                tips: 'Morning at Marina is beautiful and less crowded. The coconut water is fresh and cool. Perfect after a morning jog or walk.',
+                veg: 'Pure Veg, Healthy'
+            },
+            'Marina Beach-veg': {
+                food: 'Boiled Peanuts & Sweet Corn',
+                place: 'Beach vendors',
+                time: '5-9 PM',
+                price: '₹20-40',
+                description: 'Healthy boiled peanuts and sweet corn with butter and spices. Light and satisfying beach snacks.',
+                tips: 'Both are filling yet light. The corn with butter and chili powder is especially popular. Family-friendly options.',
+                veg: 'Pure Veg, Healthy'
+            },
+            'Marina Beach-night': {
+                food: 'Evening Stroll & Ice Cream',
+                place: 'Beach ice cream vendors',
+                time: '7-10 PM',
+                price: '₹30-80',
+                description: 'Enjoy the cool evening breeze with ice cream or kulfi. Perfect way to end the day at the beach.',
+                tips: 'Marina in the evening is lovely. Try the local kulfi flavors. Great for families and couples. The beach lights up beautifully.',
+                veg: 'Pure Veg'
+            },
+
+            // MYLAPORE - All 6 moods
+            'Mylapore-morning': {
+                food: 'Keerai Vadai with Filter Coffee',
+                place: 'Sri Krishna Sweets',
+                time: '7-10 AM (Morning)',
+                price: '₹15-30',
+                description: 'Traditional spinach fritters - healthy and delicious! This is authentic Mylapore Brahmin-style breakfast.',
+                tips: 'Mylapore is traditional area, so pure veg only. Morning is best time. The filter coffee here is strong Brahmin-style. Very authentic experience. Try the temple atmosphere nearby.',
+                veg: 'Pure Veg, Traditional'
+            },
+            'Mylapore-veg': {
+                food: 'Mixture & Murukku from Jannal Kadai',
+                place: 'Window shops (Jannal Kadai) in Mylapore',
+                time: 'All day',
+                price: '₹100-200/kg',
+                description: 'Famous Mylapore specialty! Crunchy savory snacks sold from small window shops. Multiple varieties of homemade murukku and mixture.',
+                tips: 'Jannal Kadai means "window shop" - unique to Mylapore! These are small shops with just a window. Very traditional. Great for gifts too. Each shop has secret family recipes.',
+                veg: 'Pure Veg, Traditional'
+            },
+            'Mylapore-evening': {
+                food: 'Filter Coffee & Seedai',
+                place: 'Traditional Brahmin coffee houses',
+                time: '4-7 PM',
+                price: '₹30-60',
+                description: 'Strong filter coffee with seedai (crunchy rice balls). Traditional Mylapore evening ritual.',
+                tips: 'The coffee here is the strongest and most authentic in Chennai. Seedai is crunchy and lightly spiced. Very traditional atmosphere.',
+                veg: 'Pure Veg'
+            },
+            'Mylapore-light': {
+                food: 'Curd Rice & Pickle',
+                place: 'Traditional restaurants',
+                time: '12-3 PM, 7-9 PM',
+                price: '₹40-80',
+                description: 'Comfort food at its best. Cooling curd rice with spicy pickle. Perfect for hot Chennai weather.',
+                tips: 'This is the ultimate comfort food for Mylapore locals. Simple yet satisfying. Great for digestion. Very cooling effect.',
+                veg: 'Pure Veg'
+            },
+            'Mylapore-spicy': {
+                food: 'Rasam Rice & Vadam',
+                place: 'Traditional mess restaurants',
+                time: '12-3 PM, 7-9 PM',
+                price: '₹60-100',
+                description: 'Spicy tangy rasam with rice and crispy vadams. Traditional South Indian meal.',
+                tips: 'The rasam here is authentic and flavorful. Vadams add great crunch. This is real home-style cooking. Ask for extra spicy if you can handle it!',
+                veg: 'Pure Veg'
+            },
+            'Mylapore-night': {
+                food: 'Curd Vada',
+                place: 'Sweet shops staying open late',
+                time: '6-10 PM',
+                price: '₹40-70',
+                description: 'Soft vadas soaked in spiced yogurt. Light dinner or evening snack option.',
+                tips: 'This is a lighter night option in traditional Mylapore. The vadas are soft and the yogurt is well-spiced. Good for those who prefer light dinners.',
+                veg: 'Pure Veg'
+            },
+
+            // MOUNT ROAD - All 6 moods
+            'Mount Road-night': {
+                food: 'Buhari Mutton Kothu Parotta',
+                place: 'Buhari, Mount Road (ICONIC)',
+                time: '9 PM - 2 AM (Late night)',
+                price: '₹140-180',
+                description: 'THE legendary kothu parotta spot in Chennai! Operating since decades. The mutton kothu here is what dreams are made of. Watching them make it on the huge griddle is entertainment itself.',
+                tips: 'THIS IS THE SPOT for kothu parotta in Chennai! Open very late. Peak time is 10 PM - 12 AM. Expect queues on weekends but moves fast. The mutton is premium quality. Also try their parotta with salna.',
+                veg: 'Egg kothu available'
+            },
+            'Mount Road-spicy': {
+                food: 'Parotta & Chicken Salna',
+                place: 'Multiple mess-style eateries',
+                time: 'Night till late',
+                price: '₹60-90',
+                description: 'Classic combination! Flaky parotta with spicy chicken gravy. Chennai late-night staple.',
+                tips: 'Mount Road is the late-night food hub of Chennai. Many options stay open till 2 AM or later. The salna is richly spiced and pairs perfectly with flaky parottas.',
+                veg: 'Non-veg'
+            },
+            'Mount Road-morning': {
+                food: 'Kal Dosai',
+                place: 'Early morning street vendors',
+                time: '6-10 AM',
+                price: '₹30-50',
+                description: 'Soft, thick dosas made on hot stone griddles. Quick breakfast option for office goers.',
+                tips: 'These vendors set up early for the working crowd. The dosas are thicker than usual and very filling. Served with chutney. Quick eat and go option.',
+                veg: 'Pure Veg'
+            },
+            'Mount Road-light': {
+                food: 'Fruit Salad & Fresh Juice',
+                place: 'Juice centers near Anna Salai',
+                time: 'All day',
+                price: '₹50-100',
+                description: 'Fresh fruit salads and juices. Healthy option in the busy business district.',
+                tips: 'Many juice centers along Mount Road cater to office crowd. Everything is made fresh. Good for a quick healthy snack between meetings.',
+                veg: 'Pure Veg, Healthy'
+            },
+            'Mount Road-veg': {
+                food: 'Vegetarian Meals',
+                place: 'Saravana Bhavan, Mount Road',
+                time: '11 AM - 10 PM',
+                price: '₹100-150',
+                description: 'Complete South Indian vegetarian meals with unlimited servings. Business lunch favorite.',
+                tips: 'This is the main branch and very popular. The meals are authentic and filling. Great for business lunches. AC seating available.',
+                veg: 'Pure Veg'
+            },
+            'Mount Road-evening': {
+                food: 'Samosa Chaat',
+                place: 'Street food stalls',
+                time: '5-9 PM',
+                price: '₹40-80',
+                description: 'Crushed samosas topped with yogurt, chutneys, and spices. Indo-fusion street food popular in business areas.',
+                tips: 'Perfect evening snack after work. The combination of crispy samosa with tangy yogurt and sweet-spicy chutneys is addictive!',
+                veg: 'Pure Veg'
+            },
+            // BESANT NAGAR - All 6 moods
+            'Besant Nagar-night': {
+                food: 'Egg Kothu Parotta',
+                place: 'Beachside stalls',
+                time: '7-11 PM',
+                price: '₹60-90',
+                description: 'Affordable version of kothu with scrambled eggs. Popular with students and young crowd.',
+                tips: 'Bessie has young, chill vibes. Egg kothu is cheaper than chicken/mutton but still tasty. Enjoy near the beach. The crowd here is very young and energetic.',
+                veg: 'Egg-based'
+            },
+            'Besant Nagar-evening': {
+                food: 'Rolls & Wraps',
+                place: 'Street stalls near beach',
+                time: '6-11 PM',
+                price: '₹80-150',
+                description: 'Modern street food options. Paneer tikka rolls, chicken rolls, etc. Popular with youngsters.',
+                tips: 'Besant Nagar attracts young crowd. More modern options available. Beach atmosphere is nice. Try the paneer tikka roll for veg option.',
+                veg: 'Both veg and non-veg'
+            },
+            'Besant Nagar-morning': {
+                food: 'Smoothie Bowls & Avocado Toast',
+                place: 'Beach cafes',
+                time: '8 AM - 12 PM',
+                price: '₹150-250',
+                description: 'Modern breakfast options at beach cafes. Health-conscious choices with great ambiance.',
+                tips: 'Bessie has a modern, hipster vibe. These cafes are Instagram-worthy. More expensive but great experience. Perfect for weekend brunch.',
+                veg: 'Mostly Veg'
+            },
+            'Besant Nagar-light': {
+                food: 'Fresh Salads & Sandwiches',
+                place: 'Beach cafes and stalls',
+                time: '11 AM - 9 PM',
+                price: '₹80-180',
+                description: 'Fresh, healthy options for the health-conscious crowd. Great variety of salads and gourmet sandwiches.',
+                tips: 'The beach area has many health-focused eateries. Fresh ingredients and good portions. Popular with fitness enthusiasts.',
+                veg: 'Veg and Non-veg options'
+            },
+            'Besant Nagar-spicy': {
+                food: 'Chicken 65 & Fried Rice',
+                place: 'Chinese food stalls',
+                time: '6-11 PM',
+                price: '₹100-150',
+                description: 'Spicy fried chicken with Indo-Chinese fried rice. Very popular beach food combo.',
+                tips: 'The Chicken 65 here is extra spicy and crispy. Pairs well with fried rice. Great spot to hang out with friends near the beach.',
+                veg: 'Gobi 65 available for veg'
+            },
+            'Besant Nagar-veg': {
+                food: 'Grilled Sandwich & Milkshake',
+                place: 'Beach side cafes',
+                time: '11 AM - 11 PM',
+                price: '₹90-150',
+                description: 'Grilled veggie sandwiches with thick milkshakes. Perfect beach cafe food.',
+                tips: 'The milkshakes here are thick and delicious. Try chocolate or strawberry. Sandwiches are filling. Great for casual hangouts.',
+                veg: 'Pure Veg'
+            }
+        };
+
+    let selectedArea = '';
+    let selectedMood = '';
+
+    // Initialize areas
+    const areaGrid = document.getElementById('areaGrid');
+    areas.forEach(area => {
+        const btn = document.createElement('button');
+        btn.className = 'area-btn';
+        btn.textContent = area;
+        btn.onclick = () => selectArea(area, btn);
+        areaGrid.appendChild(btn);
+    });
+
+    // Initialize moods
+    const moodGrid = document.getElementById('moodGrid');
+    moods.forEach(mood => {
+        const btn = document.createElement('button');
+        btn.className = 'mood-btn';
+        btn.innerHTML = `<span class="mood-emoji">${mood.emoji}</span><span>${mood.label}</span>`;
+        btn.onclick = () => selectMood(mood.value, btn);
+        moodGrid.appendChild(btn);
+    });
+
+    function selectArea(area, btn) {
+        document.querySelectorAll('.area-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedArea = area;
+        checkFormComplete();
+    }
+
+    function selectMood(mood, btn) {
+        document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedMood = mood;
+        checkFormComplete();
+    }
+
+    function checkFormComplete() {
+        const btn = document.getElementById('recommendBtn');
+        btn.disabled = !(selectedArea && selectedMood);
+    }
+
+    function getRecommendation() {
+        const resultDiv = document.getElementById('result');
+        
+        // Show loading
+        resultDiv.innerHTML = `
+            <div class="card loading">
+                <div class="spinner"></div>
+                <p>Finding the perfect saapadu for you, Anna...</p>
+            </div>
+        `;
+
+        // Simulate Kiro processing (in real app, this calls Kiro API with product.md context)
+        setTimeout(() => {
+            const key = `${selectedArea}-${selectedMood}`;
+            const rec = recommendations[key];
+
+            if (rec) {
+                resultDiv.innerHTML = `
+                    <div class="card result">
+                        <div class="result-header">
+                            <h2>🎯 ${rec.food}</h2>
+                            <p class="subtitle">Perfect match for your mood!</p>
+                        </div>
+
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="label">📍 Location</div>
+                                <div class="value">${rec.place}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="label">🕒 Best Time</div>
+                                <div class="value">${rec.time}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="label">💰 Price Range</div>
+                                <div class="value">${rec.price}</div>
+                            </div>
+                        </div>
+
+                        <div class="description">
+                            <strong>What makes it special:</strong><br>
+                            ${rec.description}
+                        </div>
+
+                        <div class="tips">
+                            <strong>💡 Local Tips:</strong><br>
+                            ${rec.tips}
+                        </div>
+
+                        <span class="badge">${rec.veg}</span>
+                    </div>
+                `;
+            } else {
+                // This should never happen now since all combinations are covered!
+                resultDiv.innerHTML = `
+                    <div class="card result">
+                        <h2 style="text-align: center; color: #666;">
+                            Oops! Something went wrong. Please try again! 🤔
+                        </h2>
+                    </div>
+                `;
+            }
+            
+            // Scroll to result
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 1500);
+    }
+    </script>
+</body>
+</html>
