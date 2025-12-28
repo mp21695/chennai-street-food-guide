@@ -57,7 +57,7 @@ Popular with IT crowd. Ask for extra garlic sauce!
 
 ## 📝 Blog Post
 
-Read the full technical blog: [AWS Builder Center link]
+Read the full technical blog:https://builder.aws.com/post/37TUyBrP7haJ2M3cOFg6mm6HEXm_p/chennai-street-food-guide-using-kiro
 
 ## 🏆 AI for Bharat Hackathon
 
