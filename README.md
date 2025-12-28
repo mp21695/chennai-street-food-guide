@@ -10,6 +10,8 @@ A hyper-local street food recommendation tool that understands Chennai's neighbo
 - **Time-Aware**: Breakfast spots, evening snacks, late-night foods
 - **Accurate Pricing**: Real Chennai street food prices (₹20-150)
 
+#live at
+https://mp21695.github.io/chennai-street-food-guide/
 
 ## 💻 How to Run Locally
 
